@@ -1,0 +1,110 @@
+{
+  "clients": [
+    {
+      "id_client": 10001,
+      "nom": "Ben Ali",
+      "prenom": "Ahmed",
+      "telephone": "21 234 567",
+      "email": "ahmed@mail.tn",
+      "num_chambre": 101
+    },
+    {
+      "id_client": 10003,
+      "nom": "Mansouri",
+      "prenom": "Karim",
+      "telephone": "29 111 222",
+      "email": "karim@mail.tn",
+      "num_chambre": 203
+    },
+    {
+      "id_client": 10005,
+      "nom": "Riahi",
+      "prenom": "Youssef",
+      "telephone": "52 555 666",
+      "email": "youssef@mail.tn",
+      "num_chambre": 302
+    },
+    {
+      "id_client": 114589674,
+      "nom": "eya",
+      "prenom": "joudi",
+      "telephone": "21004598",
+      "email": "eyajoudi950@gmail.com",
+      "num_chambre": -1
+    }
+  ],
+  "chambres": [
+    {
+      "num_chambre": 101,
+      "type_chambre": 1,
+      "prix": 120.0,
+      "statut": 1
+    },
+    {
+      "num_chambre": 102,
+      "type_chambre": 1,
+      "prix": 120.0,
+      "statut": 0
+    },
+    {
+      "num_chambre": 201,
+      "type_chambre": 2,
+      "prix": 200.0,
+      "statut": 0
+    },
+    {
+      "num_chambre": 203,
+      "type_chambre": 2,
+      "prix": 200.0,
+      "statut": 1
+    },
+    {
+      "num_chambre": 301,
+      "type_chambre": 3,
+      "prix": 350.0,
+      "statut": 0
+    },
+    {
+      "num_chambre": 302,
+      "type_chambre": 3,
+      "prix": 350.0,
+      "statut": 1
+    },
+    {
+      "num_chambre": 401,
+      "type_chambre": 4,
+      "prix": 500,
+      "statut": 1
+    }
+  ],
+  "reservations": [
+    {
+      "id_reservation": 1001,
+      "id_client": 10001,
+      "num_chambre": 101,
+      "checkin": "2025-03-01",
+      "checkout": "2025-03-07"
+    },
+    {
+      "id_reservation": 1002,
+      "id_client": 10003,
+      "num_chambre": 203,
+      "checkin": "2025-03-10",
+      "checkout": "2025-03-15"
+    },
+    {
+      "id_reservation": 1003,
+      "id_client": 10005,
+      "num_chambre": 302,
+      "checkin": "2025-03-12",
+      "checkout": "2025-03-20"
+    },
+    {
+      "id_client": 114589674,
+      "num_chambre": 401,
+      "checkin": "2026-03-14",
+      "checkout": "2026-03-31",
+      "id_reservation": 1004
+    }
+  ]
+}

@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hôtel Royale — Gestion</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--surface:#121212;--card:#1a1a1a;--border:#2a2a2a;
+  --gold:#c9a84c;--gold2:#e8c97a;--text:#e8e0d0;--muted:#6b6560;
+  --green:#4caf7a;--red:#cf6679;--blue:#6a9fd8;
+  --radius:6px;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;font-size:13px}
+
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100}
+.brand{padding:32px 24px 24px;border-bottom:1px solid var(--border)}
+.brand h1{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:3px;color:var(--gold);line-height:1.2}
+.brand p{font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:4px;text-transform:uppercase}
+nav{flex:1;padding:20px 0}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 24px;cursor:pointer;color:var(--muted);transition:all .2s;border-left:2px solid transparent;font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.nav-item:hover{color:var(--text);background:rgba(201,168,76,.05)}
+.nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,168,76,.08)}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.sidebar-footer{padding:20px 24px;border-top:1px solid var(--border);font-size:10px;color:var(--muted)}
+
+/* ── MAIN ── */
+.main{margin-left:220px;padding:32px;min-height:100vh}
+.page{display:none}.page.active{display:block}
+
+/* ── HEADER ── */
+.page-header{margin-bottom:32px}
+.page-header h2{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--gold);letter-spacing:2px}
+.page-header p{color:var(--muted);font-size:11px;margin-top:6px;letter-spacing:1px}
+
+/* ── STATS CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),transparent)}
+.stat-num{font-size:36px;font-family:'Cormorant Garamond',serif;font-weight:300;color:var(--gold2);line-height:1}
+.stat-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:8px}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;gap:12px;margin-bottom:20px;align-items:center;flex-wrap:wrap}
+.search-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;width:260px;outline:none;transition:border-color .2s}
+.search-box:focus{border-color:var(--gold)}
+.search-box::placeholder{color:var(--muted)}
+.btn{padding:8px 18px;border-radius:var(--radius);border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;transition:all .2s;text-transform:uppercase}
+.btn-gold{background:var(--gold);color:#0a0a0a;font-weight:500}
+.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-danger{background:transparent;border:1px solid var(--red);color:var(--red);padding:4px 10px;font-size:10px}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-edit{background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 10px;font-size:10px}
+.btn-edit:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead tr{background:rgba(201,168,76,.06);border-bottom:1px solid var(--border)}
+th{padding:12px 16px;text-align:left;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:400}
+td{padding:12px 16px;border-bottom:1px solid rgba(42,42,42,.6);font-size:12px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:10px;letter-spacing:1px;text-transform:uppercase}
+.badge-green{background:rgba(76,175,122,.15);color:var(--green);border:1px solid rgba(76,175,122,.3)}
+.badge-red{background:rgba(207,102,121,.15);color:var(--red);border:1px solid rgba(207,102,121,.3)}
+.badge-blue{background:rgba(106,159,216,.15);color:var(--blue);border:1px solid rgba(106,159,216,.3)}
+.badge-gold{background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3)}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.overlay.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;width:480px;max-width:95vw;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal h3{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--gold);margin-bottom:24px;letter-spacing:2px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.form-group input,.form-group select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold)}
+.form-group select option{background:var(--surface)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:24px}
+.error{color:var(--red);font-size:10px;margin-top:4px;display:block}
+.field-invalid{ border-color:var(--red) !important; }
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:32px;right:32px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;font-size:12px;z-index:999;animation:fadeIn .3s;border-left:3px solid var(--gold)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:48px;color:var(--muted);font-size:12px}
+.empty-icon{font-size:32px;margin-bottom:12px;opacity:.4}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:32px;color:var(--muted)}
+
+/* ── DASHBOARD EXTRAS ── */
+.activity-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}
+.mini-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.mini-card h4{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width .8s ease}
+.occ-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(42,42,42,.6);font-size:11px}
+.occ-row:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="brand">
+    <h1>HÔTEL<br/>ROYALE</h1>
+    <p>Système de Gestion</p>
+  </div>
+  <nav>
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <span class="nav-icon">◈</span> Tableau de bord
+    </div>
+    <div class="nav-item" onclick="showPage('clients')">
+      <span class="nav-icon">◉</span> Clients
+    </div>
+    <div class="nav-item" onclick="showPage('chambres')">
+      <span class="nav-icon">▣</span> Chambres
+    </div>
+    <div class="nav-item" onclick="showPage('reservations')">
+      <span class="nav-icon">◎</span> Réservations
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    v1.0 — Séance 6<br/>
+    <span id="current-time"></span>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <h2>Tableau de Bord</h2>
+      <p>Vue d'ensemble · Hôtel Royale</p>
+    </div>
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="s-clients">—</div><div class="stat-label">Clients enregistrés</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-chambres">—</div><div class="stat-label">Chambres totales</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-reservations">—</div><div class="stat-label">Réservations actives</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-dispo">—</div><div class="stat-label">Chambres disponibles</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-occ">—</div><div class="stat-label">Chambres occupées</div></div>
+    </div>
+    <div class="activity-grid">
+      <div class="mini-card">
+        <h4>Taux d'occupation</h4>
+        <div id="occ-percent" style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold2)">—%</div>
+        <div class="progress-bar"><div class="progress-fill" id="occ-bar" style="width:0%"></div></div>
+      </div>
+      <div class="mini-card">
+        <h4>Types de chambres</h4>
+        <div id="type-breakdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENTS -->
+  <div class="page" id="page-clients">
+    <div class="page-header">
+      <h2>Gestion des Clients</h2>
+      <p>Base de données · Clients enregistrés</p>
+    </div>
+    <div class="toolbar">
+      <input class="search-box" type="text" placeholder="Rechercher par nom, prénom, CIN..." oninput="filterClients(this.value)"/>
+      <button class="btn btn-gold" onclick="openModal('add-client')">+ Ajouter un client</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>CIN / ID</th><th>Nom</th><th>Prénom</th><th>Téléphone</th><th>Email</th><th>Chambre</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="clients-tbody"><tr><td colspan="7" class="loading">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CHAMBRES -->
+  <div class="page" id="page-chambres">
+    <div class="page-header">
+      <h2>Gestion des Chambres</h2>
+      <p>Inventaire · Disponibilité en temps réel</p>
+    </div>
+    <div class="toolbar">
+      <input class="search-box" type="text" placeholder="Rechercher par numéro, type..." oninput="filterChambres(this.value)"/>
+      <select class="search-box" style="width:160px" onchange="filterChambresStatut(this.value)">
+        <option value="">Tous les statuts</option>
+        <option value="0">Disponible</option>
+        <option value="1">Occupée</option>
+      </select>
+      <button class="btn btn-gold" onclick="openModal('add-chambre')">+ Ajouter une chambre</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Chambre</th><th>Type</th><th>Prix / nuit</th><th>Statut</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="chambres-tbody"><tr><td colspan="5" class="loading">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RÉSERVATIONS -->
+  <div class="page" id="page-reservations">
+    <div class="page-header">
+      <h2>Gestion des Réservations</h2>
+      <p>Historique · Réservations confirmées</p>
+    </div>
+    <div class="toolbar">
+      <input class="search-box" type="text" placeholder="Rechercher par client, chambre..." oninput="filterReservations(this.value)"/>
+      <button class="btn btn-gold" onclick="openModal('add-reservation')">+ Nouvelle réservation</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>ID Réservation</th><th>Client</th><th>Chambre</th><th>Type</th><th>Check-in</th><th>Check-out</th><th>Prix/nuit</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="res-tbody"><tr><td colspan="8" class="loading">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- Add Client -->
+<div class="overlay" id="modal-add-client">
+  <div class="modal">
+    <h3>Nouveau Client</h3>
+    <div class="form-row">
+<div class="form-group"><label>CIN / ID</label><input type="number" id="f-cin" min="10000" step="1" required/></div>
+      <div class="form-group"><label>Téléphone</label><input type="text" id="f-tel" pattern="[0-9\\s]{8,12}" title="8-12 chiffres/espaces" required placeholder="21 000 000"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Nom</label><input type="text" id="f-nom" pattern="[A-Za-zÀ-ÿ\\s]+" title="Alphabets seulement" required placeholder="Dupont" oninput="this.value = this.value.replace(/[^A-Za-zÀ-ÿ\\s]/g, \'\');" /></div>
+      <div class="form-group"><label>Prénom</label><input type="text" id="f-prenom" pattern="[A-Za-zÀ-ÿ\\s]+" title="Alphabets seulement" required placeholder="Jean"/></div>
+    </div>
+<div class="form-group"><label>Email</label><input type="email" id="f-email" required/></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('add-client')">Annuler</button>
+      <button class="btn btn-gold" onclick="submitAddClient()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Chambre -->
+<div class="overlay" id="modal-add-chambre">
+  <div class="modal">
+    <h3>Nouvelle Chambre</h3>
+<div class="form-row">
+      <div class="form-group"><label>N° Chambre</label><input type="number" id="f-num" min="1" step="1" required placeholder="501"/></div>
+      <div class="form-group"><label>Prix / nuit (TND)</label><input type="number" id="f-prix" min="0.01" step="0.01" required placeholder="200"/></div>
+    </div>
+    <div class="form-group"><label>Type de chambre</label>
+      <select id="f-type">
+        <option value="1">Simple</option>
+        <option value="2">Double</option>
+        <option value="3">Suite</option>
+        <option value="4">Suite Prestige</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Statut initial</label>
+      <select id="f-statut">
+        <option value="0">Disponible</option>
+        <option value="1">Occupée</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('add-chambre')">Annuler</button>
+      <button class="btn btn-gold" onclick="submitAddChambre()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Réservation -->
+<div class="overlay" id="modal-add-reservation">
+  <div class="modal">
+    <h3>Nouvelle Réservation</h3>
+<div class="form-row">
+      <div class="form-group"><label>CIN Client</label><input type="number" id="f-res-client" min="10000" step="1" required/></div>
+      <div class="form-group"><label>N° Chambre</label><input type="number" id="f-res-chambre" min="1" step="1" required/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Check-in</label><input type="date" id="f-checkin" required onchange="setDateMinToday('f-checkout'); compareDates();"/></div>
+      <div class="form-group"><label>Check-out</label><input type="date" id="f-checkout" required onchange="compareDates();"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('add-reservation')">Annuler</button>
+      <button class="btn btn-gold" onclick="submitAddReservation()">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Client -->
+<div class="overlay" id="modal-edit-client">
+  <div class="modal">
+    <h3>Modifier Client</h3>
+    <input type="hidden" id="edit-cin"/>
+<div class="form-row">
+      <div class="form-group"><label>Nom</label><input type="text" id="edit-nom" pattern="[A-Za-zÀ-ÿ\\s]+" title="Alphabets seulement" required/></div>
+      <div class="form-group"><label>Prénom</label><input type="text" id="edit-prenom" pattern="[A-Za-zÀ-ÿ\\s]+" title="Alphabets seulement" required/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Téléphone</label><input type="text" id="edit-tel"/></div>
+      <div class="form-group"><label>Email</label><input type="email" id="edit-email"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('edit-client')">Annuler</button>
+      <button class="btn btn-gold" onclick="submitEditClient()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Chambre -->
+<div class="overlay" id="modal-edit-chambre">
+  <div class="modal">
+    <h3>Modifier Chambre</h3>
+    <input type="hidden" id="edit-num"/>
+<div class="form-row">
+      <div class="form-group"><label>Prix / nuit</label><input type="number" id="edit-prix" min="0.01" step="0.01" required/></div>
+      <div class="form-group"><label>Statut</label>
+        <select id="edit-statut" required>
+          <option value="0">Disponible</option>
+          <option value="1">Occupée</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Type</label>
+      <select id="edit-type">
+        <option value="1">Simple</option>
+        <option value="2">Double</option>
+        <option value="3">Suite</option>
+        <option value="4">Suite Prestige</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('edit-chambre')">Annuler</button>
+      <button class="btn btn-gold" onclick="submitEditChambre()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:5050/api';
+let allClients=[], allChambres=[], allReservations=[];
+
+// ── Validation Helpers ──────────────────────────────────────────────────────
+function clearErrors() {
+  document.querySelectorAll('.error').forEach(e => e.remove());
+  document.querySelectorAll('.field-invalid').forEach(f => f.classList.remove('field-invalid'));
+}
+
+function showError(fieldId, msg) {
+  clearErrors();
+  const field = document.getElementById(fieldId);
+  const err = document.createElement('div');
+  err.className = 'error';
+  err.textContent = msg;
+  field.parentNode.appendChild(err);
+  field.classList.add('field-invalid');
+  field.focus();
+}
+
+function validateField(id, cond, msg) {
+  if (!cond()) {
+    showError(id, msg);
+    return false;
+  }
+  return true;
+}
+
+async function checkClientExists(cid) {
+  if (allClients.length === 0) await loadClients();
+  return allClients.some(c => c.id_client == cid);
+}
+
+async function checkRoomExistsAndAvailable(num) {
+  if (allChambres.length === 0) await loadChambres();
+  const room = allChambres.find(c => c.num_chambre == num);
+  return room && room.statut == 0;
+}
+
+function compareDates() {
+  const ci = document.getElementById('f-checkin').value;
+  const co = document.getElementById('f-checkout').value;
+  if (ci && co && new Date(co) <= new Date(ci)) {
+    showError('f-checkout', 'Check-out doit être après Check-in');
+    return false;
+  }
+  return true;
+}
+
+function setDateMinToday(id) {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById(id).min = today;
+}
+
+// ── Navigation ──────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const items = document.querySelectorAll('.nav-item');
+  const map = {dashboard:0,clients:1,chambres:2,reservations:3};
+  items[map[name]].classList.add('active');
+  if(name==='dashboard') loadStats();
+  if(name==='clients') loadClients();
+  if(name==='chambres') loadChambres();
+  if(name==='reservations') loadReservations();
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg, color='var(--gold)') {
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  t.style.borderLeftColor=color;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+
+// ── Modal ────────────────────────────────────────────────────────────────────
+function openModal(id) { 
+  document.getElementById('modal-'+id).classList.add('show');
+  if (id === 'add-reservation') {
+    setDateMinToday('f-checkin');
+    setDateMinToday('f-checkout');
+  }
+}
+function closeModal(id) { document.getElementById('modal-'+id).classList.remove('show') }
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
+
+// ── Stats / Dashboard ────────────────────────────────────────────────────────
+async function loadStats() {
+  const r = await fetch(API+'/stats');
+  const s = await r.json();
+  document.getElementById('s-clients').textContent=s.nb_clients;
+  document.getElementById('s-chambres').textContent=s.nb_chambres;
+  document.getElementById('s-reservations').textContent=s.nb_reservations;
+  document.getElementById('s-dispo').textContent=s.nb_disponibles;
+  document.getElementById('s-occ').textContent=s.nb_occupees;
+  const pct = s.nb_chambres ? Math.round(s.nb_occupees/s.nb_chambres*100) : 0;
+  document.getElementById('occ-percent').textContent=pct+'%';
+  document.getElementById('occ-bar').style.width=pct+'%';
+  // type breakdown
+  const ch = await fetch(API+'/chambres').then(r=>r.json());
+  const types={Simple:0,Double:0,Suite:0,'Suite Prestige':0};
+  ch.forEach(c=>{ if(types[c.type_label]!==undefined) types[c.type_label]++; });
+  document.getElementById('type-breakdown').innerHTML=
+    Object.entries(types).map(([k,v])=>`
+      <div class="occ-row"><span>${k}</span><span style="color:var(--gold)">${v} chambre${v>1?'s':''}</span></div>
+    `).join('');
+}
+
+// ── CLIENTS ─────────────────────────────────────────────────────────────────
+async function loadClients() {
+  const r = await fetch(API+'/clients'); allClients=await r.json();
+  renderClients(allClients);
+}
+function renderClients(data) {
+  const tb = document.getElementById('clients-tbody');
+  if(!data.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">◉</div>Aucun client enregistré</div></td></tr>';return}
+  tb.innerHTML = data.map(c=>`
+    <tr>
+      <td><span style="color:var(--gold);font-weight:500">${c.id_client}</span></td>
+      <td>${c.nom}</td>
+      <td>${c.prenom}</td>
+      <td style="color:var(--muted)">${c.telephone}</td>
+      <td style="color:var(--muted)">${c.email}</td>
+      <td>${c.num_chambre>0?`<span class="badge badge-blue">Ch. ${c.num_chambre}</span>`:'<span class="badge">—</span>'}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-edit" onclick="openEditClient(${c.id_client})">Modifier</button>
+        <button class="btn btn-danger" onclick="deleteClient(${c.id_client})">Supprimer</button>
+      </td>
+    </tr>`).join('');
+}
+function filterClients(q) {
+  const f=q.toLowerCase();
+  renderClients(allClients.filter(c=>`${c.nom} ${c.prenom} ${c.id_client}`.toLowerCase().includes(f)));
+}
+async function submitAddClient() {
+  clearErrors();
+  const cin = document.getElementById('f-cin').value;
+  const nom = document.getElementById('f-nom').value.trim();
+  const prenom = document.getElementById('f-prenom').value.trim();
+  const tel = document.getElementById('f-tel').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  
+  if (!validateField('f-cin', () => cin >= 10000, 'ID >= 10000') ||
+      !validateField('f-nom', () => /^[A-Za-zÀ-ÿ\\s]+$/.test(nom) && nom.length >= 2, 'Nom: alphabets seulement (min 2)') ||
+      !validateField('f-prenom', () => /^[A-Za-zÀ-ÿ\\s]+$/.test(prenom) && prenom.length >= 2, 'Prénom: alphabets seulement (min 2)') ||
+      !validateField('f-tel', () => /^[0-9\\s]{8,12}$/.test(tel), 'Téléphone 8-12 chiffres')) return;
+  
+  const body = {id_client: +cin, nom, prenom, telephone: tel, email};
+  const r = await fetch(API+'/clients', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(r.ok){closeModal('add-client');loadClients();loadStats();toast('Client ajouté ✓')}
+  else{const e=await r.json();toast(e.error || 'Erreur serveur','var(--red)')}
+}
+function openEditClient(cid) {
+  const c=allClients.find(x=>x.id_client===cid);
+  document.getElementById('edit-cin').value=cid;
+  document.getElementById('edit-nom').value=c.nom;
+  document.getElementById('edit-prenom').value=c.prenom;
+  document.getElementById('edit-tel').value=c.telephone;
+  document.getElementById('edit-email').value=c.email;
+  openModal('edit-client');
+}
+async function submitEditClient() {
+  clearErrors();
+  const cid = document.getElementById('edit-cin').value;
+  const nom = document.getElementById('edit-nom').value.trim();
+  const prenom = document.getElementById('edit-prenom').value.trim();
+  const tel = document.getElementById('edit-tel').value.trim();
+  const email = document.getElementById('edit-email').value.trim();
+  
+  if (!validateField('edit-nom', () => /^[A-Za-zÀ-ÿ\\s]+$/.test(nom) && nom.length >= 2, 'Nom: alphabets seulement (min 2)') ||
+      !validateField('edit-prenom', () => /^[A-Za-zÀ-ÿ\\s]+$/.test(prenom) && prenom.length >= 2, 'Prénom: alphabets seulement (min 2)') ||
+      !validateField('edit-tel', () => /^[0-9\\s]{8,12}$/.test(tel), 'Téléphone 8-12 chiffres')) return;
+  
+  const body = {nom, prenom, telephone: tel, email};
+  const r = await fetch(API+'/clients/'+cid, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(r.ok){closeModal('edit-client');loadClients();loadStats();toast('Client modifié ✓')}
+  else{const e=await r.json();toast(e.error || 'Erreur','var(--red)')}
+}
+async function deleteClient(cid) {
+  if(!confirm('Supprimer ce client ?')) return;
+  await fetch(API+'/clients/'+cid,{method:'DELETE'});
+  loadClients();toast('Client supprimé','var(--red)');
+}
+
+// ── CHAMBRES ─────────────────────────────────────────────────────────────────
+let chambreStatutFilter='';
+async function loadChambres() {
+  const r=await fetch(API+'/chambres');allChambres=await r.json();
+  applyChambresFilter();
+}
+function applyChambresFilter() {
+  let data=allChambres;
+  if(chambreStatutFilter!=='') data=data.filter(c=>String(c.statut)===chambreStatutFilter);
+  renderChambres(data);
+}
+function filterChambres(q) {
+  const f=q.toLowerCase();
+  let data=allChambres.filter(c=>`${c.num_chambre} ${c.type_label}`.toLowerCase().includes(f));
+  if(chambreStatutFilter!=='') data=data.filter(c=>String(c.statut)===chambreStatutFilter);
+  renderChambres(data);
+}
+function filterChambresStatut(v){chambreStatutFilter=v;applyChambresFilter();}
+function renderChambres(data) {
+  const tb=document.getElementById('chambres-tbody');
+  if(!data.length){tb.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-icon">▣</div>Aucune chambre</div></td></tr>';return}
+  tb.innerHTML=data.map(c=>`
+    <tr>
+      <td><span style="color:var(--gold);font-weight:500">N° ${c.num_chambre}</span></td>
+      <td><span class="badge badge-gold">${c.type_label}</span></td>
+      <td style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold2)">${c.prix.toFixed(2)} <span style="font-size:10px;color:var(--muted)">TND</span></td>
+      <td><span class="badge ${c.statut===0?'badge-green':'badge-red'}">${c.statut_label}</span></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-edit" onclick="openEditChambre(${c.num_chambre})">Modifier</button>
+        <button class="btn btn-danger" onclick="deleteChambre(${c.num_chambre})">Supprimer</button>
+      </td>
+    </tr>`).join('');
+}
+async function submitAddChambre() {
+  clearErrors();
+  const num = document.getElementById('f-num').value;
+  const prix = parseFloat(document.getElementById('f-prix').value);
+  const type = +document.getElementById('f-type').value;
+  const statut = +document.getElementById('f-statut').value;
+  
+  if (!validateField('f-num', () => num >= 1, 'N° >= 1') ||
+      !validateField('f-prix', () => prix > 0, 'Prix > 0') ||
+      !validateField('f-type', () => [1,2,3,4].includes(type), 'Type valide')) return;
+  
+  const body = {num_chambre:+num, type_chambre:type, prix, statut};
+  const r = await fetch(API+'/chambres', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(r.ok){closeModal('add-chambre');loadChambres();loadStats();toast('Chambre ajoutée ✓')}
+  else{const e=await r.json();toast(e.error || 'Erreur','var(--red)')}
+}
+function openEditChambre(num) {
+  const c=allChambres.find(x=>x.num_chambre===num);
+  document.getElementById('edit-num').value=num;
+  document.getElementById('edit-prix').value=c.prix;
+  document.getElementById('edit-statut').value=c.statut;
+  document.getElementById('edit-type').value=c.type_chambre;
+  openModal('edit-chambre');
+}
+async function submitEditChambre() {
+  clearErrors();
+  const num = document.getElementById('edit-num').value;
+  const prix = parseFloat(document.getElementById('edit-prix').value);
+  const type = +document.getElementById('edit-type').value;
+  const statut = +document.getElementById('edit-statut').value;
+  
+  if (!validateField('edit-prix', () => prix > 0, 'Prix > 0') ||
+      !validateField('edit-type', () => [1,2,3,4].includes(type), 'Type valide')) return;
+  
+  const body = {prix, type_chambre: type, statut};
+  const r = await fetch(API+'/chambres/'+num, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(r.ok){closeModal('edit-chambre');loadChambres();loadStats();toast('Chambre modifiée ✓')}
+  else{const e=await r.json();toast(e.error || 'Erreur','var(--red)')}
+}
+async function deleteChambre(num) {
+  if(!confirm('Supprimer cette chambre ?')) return;
+  await fetch(API+'/chambres/'+num,{method:'DELETE'});
+  loadChambres();toast('Chambre supprimée','var(--red)');
+}
+
+// ── RÉSERVATIONS ──────────────────────────────────────────────────────────────
+async function loadReservations() {
+  const r=await fetch(API+'/reservations');allReservations=await r.json();
+  renderReservations(allReservations);
+}
+function renderReservations(data) {
+  const tb=document.getElementById('res-tbody');
+  if(!data.length){tb.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">◎</div>Aucune réservation</div></td></tr>';return}
+  tb.innerHTML=data.map(r=>`
+    <tr>
+      <td><span style="color:var(--gold);font-weight:500">#${r.id_reservation}</span></td>
+      <td>${r.client_nom||'—'}</td>
+      <td><span class="badge badge-blue">Ch. ${r.num_chambre}</span></td>
+      <td><span class="badge badge-gold">${r.type_chambre}</span></td>
+      <td>${r.checkin}</td>
+      <td>${r.checkout}</td>
+      <td style="font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--gold2)">${r.prix?r.prix.toFixed(2)+' TND':'—'}</td>
+      <td><button class="btn btn-danger" onclick="deleteReservation(${r.id_reservation})">Annuler</button></td>
+    </tr>`).join('');
+}
+function filterReservations(q) {
+  const f=q.toLowerCase();
+  renderReservations(allReservations.filter(r=>`${r.client_nom} ${r.num_chambre} ${r.id_reservation}`.toLowerCase().includes(f)));
+}
+async function submitAddReservation() {
+  clearErrors();
+  const cid = +document.getElementById('f-res-client').value;
+  const num = +document.getElementById('f-res-chambre').value;
+  const checkin = document.getElementById('f-checkin').value;
+  const checkout = document.getElementById('f-checkout').value;
+  
+  if (!validateField('f-res-client', () => cid >= 10000, 'ID Client >= 10000') ||
+      !(await checkClientExists(cid)) ) {
+    showError('f-res-client', 'Client inexistant');
+    return;
+  }
+  if (!validateField('f-res-chambre', () => num >= 1, 'N° >= 1') ||
+      !(await checkRoomExistsAndAvailable(num)) ) {
+    showError('f-res-chambre', 'Chambre inexistante ou occupée');
+    return;
+  }
+  if (!checkin || !checkout || !compareDates()) return;
+  
+  const body = {id_client:cid, num_chambre:num, checkin, checkout};
+  const r = await fetch(API+'/reservations', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(r.ok){closeModal('add-reservation');loadReservations();loadStats();toast('Réservation confirmée ✓')}
+  else{const e=await r.json();toast(e.error || 'Erreur','var(--red)')}
+}
+async function deleteReservation(rid) {
+  if(!confirm('Annuler cette réservation ?')) return;
+  await fetch(API+'/reservations/'+rid,{method:'DELETE'});
+  loadReservations();toast('Réservation annulée','var(--red)');
+}
+
+// ── Clock ────────────────────────────────────────────────────────────────────
+function updateTime(){document.getElementById('current-time').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
+updateTime();setInterval(updateTime,1000);
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+loadStats();
+</script>
+</body>
+</html>
